@@ -143,7 +143,7 @@
                     </div>
                     <div class="w-1/2 md:w-1/3">
                         <label class="block text-xs text-gray-500 mb-1">तहसील (बदल सकते हैं)</label>
-                        <input type="text" id="tehsilInput" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-green-400 outline-none" placeholder="उदा. गुड़ामालानी" value="गुड़ामालानी">
+                        <input type="text" id="tehsilInput" class="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:ring-1 focus:ring-green-400 outline-none" placeholder="उदा. बाड़मेर" value="बाड़मेर">
                     </div>
                     <div class="w-1/2 md:w-1/3">
                         <label class="block text-xs text-gray-500 mb-1">दिनांक (बदल सकते हैं)</label>
@@ -175,6 +175,13 @@
 
     <!-- Hidden Container for Image Capture (फोटो डाउनलोड के लिए सुंदर डिज़ाइन) -->
     <div id="exportWrapper" style="position: absolute; top: -10000px; left: -10000px; width: 600px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 30px; border-radius: 20px; font-family: 'Noto Sans Devanagari', sans-serif;">
+        
+        <!-- परमात्मा का नाम और जयकारा (फोटो के लिए) -->
+        <div style="text-align: center; margin-bottom: 15px;">
+            <p style="color: #854d0e; font-weight: bold; font-size: 16px; margin: 0; background: #fef9c3; display: inline-block; padding: 4px 15px; border-radius: 20px; border: 1px solid #fde047;">🙏 सत साहेब जी</p>
+            <h3 style="color: #166534; font-weight: bold; font-size: 18px; margin: 10px 0 0 0;">कबीर परमेश्वर की जय हो 🌺 संत रामपाल जी महाराज की जय</h3>
+        </div>
+
         <h2 style="text-align: center; color: #15803d; font-size: 26px; font-weight: bold; margin-bottom: 25px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">📱 सोशल मीडिया सेवा रिपोर्ट 📱</h2>
         
         <!-- Dashboard Clone Space -->
@@ -193,13 +200,32 @@
     </div>
 
     <script>
-        // डिफ़ॉल्ट डेट सेट करना
-        document.addEventListener('DOMContentLoaded', () => {
+        // --- स्मार्ट डेट लॉजिक (रोज़ अपने-आप बदलेगी) ---
+        function getSystemDate() {
             const today = new Date();
             const day = String(today.getDate()).padStart(2, '0');
             const month = String(today.getMonth() + 1).padStart(2, '0');
             const year = today.getFullYear();
-            document.getElementById('dateInput').value = `${day}/${month}/${year}`;
+            return `${day}/${month}/${year}`;
+        }
+
+        let userManuallyChangedDate = false;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('dateInput').value = getSystemDate();
+        });
+
+        // अगर यूज़र ने खुद से तारीख बदली है, तो उसे याद रखें
+        document.getElementById('dateInput').addEventListener('input', () => {
+            userManuallyChangedDate = true;
+        });
+
+        // जैसे ही यूज़र पेस्ट करने के लिए बॉक्स पर क्लिक करेगा, तारीख अपने-आप आज की हो जाएगी 
+        // (ताकि अगर ब्राउज़र कल से खुला हो, तो भी आज की डेट आ जाए)
+        document.getElementById('inputData').addEventListener('focus', () => {
+            if (!userManuallyChangedDate) {
+                document.getElementById('dateInput').value = getSystemDate();
+            }
         });
 
         // रिपोर्ट जनरेट करने का बटन
@@ -325,7 +351,7 @@
                 // कुल भगत = उपस्थित + अनुपस्थित
                 let totalCount = presentCount + absentCount;
                 
-                const userTehsil = document.getElementById('tehsilInput').value || "गुड़ामालानी";
+                const userTehsil = document.getElementById('tehsilInput').value || "बाड़मेर";
                 let dateStr = document.getElementById('dateInput').value;
                 
                 const formatNum = (num) => num === 0 ? '00' : num;
@@ -455,8 +481,9 @@
 
             showToast('फोटो बन रही है, कृपया प्रतीक्षा करें...', 'success');
 
-            // डेटा को एक्सपोर्ट कंटेनर में डालना
-            document.getElementById('exportText').innerText = outText;
+            // डेटा को एक्सपोर्ट कंटेनर में डालना (वॉट्सऐप वाले स्टार * हटाकर ताकि फोटो साफ़ दिखे)
+            const cleanTextForImage = outText.replace(/\*/g, '');
+            document.getElementById('exportText').innerText = cleanTextForImage;
             
             // डैशबोर्ड कार्ड्स को कॉपी करके एक्सपोर्ट कंटेनर में डालना (डिज़ाइन के लिए)
             const dashArea = document.getElementById('exportDashboardArea');
@@ -500,8 +527,8 @@
             document.getElementById('liveDashboard').classList.add('hidden');
             document.getElementById('alertsArea').classList.add('hidden');
             
-            const today = new Date();
-            document.getElementById('dateInput').value = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+            userManuallyChangedDate = false;
+            document.getElementById('dateInput').value = getSystemDate();
         });
 
         function showToast(message, type = 'success') {
